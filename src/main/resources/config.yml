@@ -1,0 +1,10 @@
+categories:
+  design:
+    item: OAK_LOG
+    name: "&aDesign"
+  function:
+    item: REDSTONE
+    name: "&cFunctionality"
+  features:
+    item: GOLD_BLOCK
+    name: "&6Features"

@@ -2,3 +2,12 @@ name: BitlanBuild
 version: '${project.version}'
 main: dev.stjernholm.bitlanbuild.BitlanBuild
 api-version: '1.21'
+depend:
+  - PlotSquared
+  - WorldGuard
+commands:
+  plot:
+  theme:
+    permission: bitlan.op
+  vote:
+    permission: bitlan.op
