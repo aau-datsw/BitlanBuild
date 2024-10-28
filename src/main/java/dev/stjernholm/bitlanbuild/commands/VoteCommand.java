@@ -4,6 +4,7 @@ import dev.stjernholm.bitlanbuild.BitlanBuild;
 import dev.stjernholm.bitlanbuild.managers.BuildBattleManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -45,9 +46,9 @@ public class VoteCommand implements CommandExecutor {
         instance.getBuildBattleManager().getCategories().forEach(category -> {
             player.getInventory().addItem(category.itemStack);
         });
-        ItemStack unvisitedPlot = new ItemStack(Material.COMPASS);
+        ItemStack unvisitedPlot = new ItemStack(Material.END_PORTAL_FRAME);
         ItemMeta unvisitedMeta = unvisitedPlot.getItemMeta();
-        unvisitedMeta.displayName(Component.text("Teleport to plot missing votes.").color(TextColor.color(255, 79, 76)));
+        unvisitedMeta.displayName(Component.text("Teleport to next votable plot").color(TextColor.color(255, 79, 76)));
         unvisitedPlot.setItemMeta(unvisitedMeta);
         player.getInventory().setItem(8, unvisitedPlot);
 

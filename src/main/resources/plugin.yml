@@ -8,6 +8,8 @@ depend:
 commands:
   plot:
   theme:
-    permission: bitlan.op
+    permission: bitlan.superop
   vote:
     permission: bitlan.op
+  result:
+    permission: bitlan.superop

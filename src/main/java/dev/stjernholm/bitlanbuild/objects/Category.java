@@ -28,4 +28,12 @@ public class Category {
         categoryItem.setItemMeta(categoryItemMeta);
         this.itemStack = categoryItem;
     }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public String getName() {
+        return name.replace("&", "§");
+    }
 }

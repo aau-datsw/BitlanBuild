@@ -4,9 +4,13 @@ import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import com.plotsquared.core.plot.PlotId;
 import dev.stjernholm.bitlanbuild.BitlanBuild;
+import dev.stjernholm.bitlanbuild.inventories.VoteCategory;
+import dev.stjernholm.bitlanbuild.objects.Category;
+import dev.stjernholm.bitlanbuild.objects.VotablePlot;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,8 +19,13 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.awt.*;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class EventManager implements Listener {
@@ -85,11 +94,31 @@ public class EventManager implements Listener {
 
         if((event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK) && !player.getInventory().getItemInMainHand().isEmpty()
                 && instance.getBuildBattleManager().getStatus() == BuildBattleManager.COMPETITION_STATUS.ENDED) {
-            NamespacedKey key = new NamespacedKey(instance, "vote-category");
 
+            if(player.getInventory().getItemInMainHand().getType().equals(Material.END_PORTAL_FRAME)) {
+                Optional<VotablePlot> missingPlot = instance.getBuildBattleManager().getVoteablePlots().stream().filter(votablePlot -> {
+                    if(votablePlot.alreadyVotedAllCategories(player, instance.getBuildBattleManager().getCategories())) return false;
+                    return true;
+                }).findFirst();
+                if(missingPlot.isPresent()) {
+                    missingPlot.get().teleportPlayer(player);
+                    player.sendMessage(Component.text("Du mangler at afgive én eller flere votes på dette plot").color(TextColor.color(Color.ORANGE.getRed(), Color.ORANGE.getGreen(), Color.ORANGE.getBlue())));
+                } else {
+                    player.sendMessage(Component.text("Der er ikke flere votable plots!").color(TextColor.color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue())));
+                }
+                return;
+            }
+
+            NamespacedKey key = new NamespacedKey(instance, "vote-category");
             if(player.getInventory().getItemInMainHand().getPersistentDataContainer().has(key)) {
                 event.setCancelled(true);
-                player.sendMessage(player.getInventory().getItemInMainHand().getPersistentDataContainer().get(key, PersistentDataType.STRING));
+                PlotPlayer plotPlayer = PlotPlayer.from(player);
+                Plot currentPlot = plotPlayer.getCurrentPlot();
+                if (Objects.isNull(currentPlot) || !currentPlot.hasOwner()) return;
+                String categoryID = player.getInventory().getItemInMainHand().getPersistentDataContainer().get(key, PersistentDataType.STRING);
+                Category category = instance.getBuildBattleManager().getCategories().stream().filter(category1 -> category1.getUuid().equals(categoryID)).findFirst().get();
+                VotablePlot votablePlot = instance.getBuildBattleManager().getVoteablePlots().stream().filter(_votablePlot -> _votablePlot.getOwner().equals(currentPlot.getOwner())).findFirst().get();
+                new VoteCategory(player, category, votablePlot).open();
             }
         }
     }

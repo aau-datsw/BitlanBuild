@@ -1,31 +1,35 @@
 package dev.stjernholm.bitlanbuild;
 
 import dev.stjernholm.bitlanbuild.commands.PlotCommand;
+import dev.stjernholm.bitlanbuild.commands.ResultCommand;
 import dev.stjernholm.bitlanbuild.commands.ThemeCommand;
 import dev.stjernholm.bitlanbuild.commands.VoteCommand;
 import dev.stjernholm.bitlanbuild.managers.BuildBattleManager;
 import dev.stjernholm.bitlanbuild.managers.EventManager;
 import dev.stjernholm.bitlanbuild.managers.PlotManager;
+import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class BitlanBuild extends JavaPlugin {
+public final class BitlanBuild extends ExtendedJavaPlugin {
 
     private EventManager eventManager;
     private PlotManager plotManager;
     private BuildBattleManager buildBattleManager;
 
     @Override
-    public void onEnable() {
+    public void enable() {
         this.eventManager = new EventManager(this);
         this.plotManager = new PlotManager(this);
         this.buildBattleManager = new BuildBattleManager(this);
         registerCommands();
         getConfig().options().copyDefaults(true);
         saveConfig();
+
+
     }
 
     @Override
-    public void onDisable() {
+    public void disable() {
         buildBattleManager.disable();
         buildBattleManager = null;
         eventManager.disable();
@@ -50,5 +54,6 @@ public final class BitlanBuild extends JavaPlugin {
         getCommand("plot").setExecutor(new PlotCommand(this));
         getCommand("theme").setExecutor(new ThemeCommand(this));
         getCommand("vote").setExecutor(new VoteCommand(this));
+        getCommand("result").setExecutor(new ResultCommand(this));
     }
 }

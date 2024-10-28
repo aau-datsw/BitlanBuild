@@ -1,5 +1,6 @@
 package dev.stjernholm.bitlanbuild.managers;
 
+import com.plotsquared.core.plot.Plot;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.flags.Flags;
@@ -8,7 +9,7 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import dev.stjernholm.bitlanbuild.BitlanBuild;
 import dev.stjernholm.bitlanbuild.objects.Category;
-import dev.stjernholm.bitlanbuild.objects.VoteablePlot;
+import dev.stjernholm.bitlanbuild.objects.VotablePlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -26,7 +27,7 @@ public class BuildBattleManager {
     private BitlanBuild instance;
     private BossBar statusBar;
     private final ArrayList<Category> categories;
-    private final ArrayList<VoteablePlot> voteablePlots;
+    private final ArrayList<VotablePlot> voteablePlots;
 
     public BuildBattleManager(BitlanBuild instance) {
         this.instance = instance;
@@ -99,6 +100,12 @@ public class BuildBattleManager {
         RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
         ProtectedRegion region = regionManager.getRegion("__global__");
         region.setFlag(Flags.BUILD, StateFlag.State.DENY);
+
+        voteablePlots.clear();
+
+        for(Plot plot : instance.getPlotManager().getPlotAPI().getAllPlots()) {
+            voteablePlots.add(new VotablePlot(plot, getCategories(), instance));
+        }
     }
 
     public enum COMPETITION_STATUS {
@@ -115,7 +122,7 @@ public class BuildBattleManager {
         return categories;
     }
 
-    public ArrayList<VoteablePlot> getVoteablePlots() {
+    public ArrayList<VotablePlot> getVoteablePlots() {
         return voteablePlots;
     }
 }
