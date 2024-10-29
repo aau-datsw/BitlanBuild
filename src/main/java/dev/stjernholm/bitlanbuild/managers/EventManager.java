@@ -19,19 +19,17 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.awt.*;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 public class EventManager implements Listener {
 
     private BitlanBuild instance;
-    private TextColor grey = TextColor.color(63, 76, 72);
+    private final TextColor grey = TextColor.color(63, 76, 72);
 
     public EventManager(BitlanBuild instance) {
         this.instance = instance;
@@ -56,7 +54,7 @@ public class EventManager implements Listener {
         this.instance.getBuildBattleManager().getStatusBar().addPlayer(player);
 
         // Get player as plot player type
-        PlotPlayer plotPlayer = PlotPlayer.from(player);
+        PlotPlayer<Player> plotPlayer = PlotPlayer.from(player);
 
         // Create new plot if no plot is created yet and player is not op.
         if(plotPlayer.getPlotCount() == 0 && !player.isOp() && instance.getBuildBattleManager().getStatus() != BuildBattleManager.COMPETITION_STATUS.ENDED) {
@@ -68,11 +66,10 @@ public class EventManager implements Listener {
             freePlot.teleportPlayer(plotPlayer, couldTeleport -> {});
         }
 
-        Bukkit.getAsyncScheduler().runDelayed(instance, scheduledTask -> {
-            player.sendMessage(Component.text("To get to your plot at any time, execute the command ")
-                    .color(TextColor.color(255, 173, 0))
-                    .append(Component.text("/plot").color(TextColor.color(255, 79, 76))));
-        }, 1, TimeUnit.SECONDS);
+        Bukkit.getAsyncScheduler().runDelayed(instance, scheduledTask ->
+                player.sendMessage(Component.text("To get to your plot at any time, execute the command ")
+                .color(TextColor.color(255, 173, 0))
+                .append(Component.text("/plot").color(TextColor.color(255, 79, 76)))), 1, TimeUnit.SECONDS);
     }
 
     @EventHandler
@@ -96,10 +93,7 @@ public class EventManager implements Listener {
                 && instance.getBuildBattleManager().getStatus() == BuildBattleManager.COMPETITION_STATUS.ENDED) {
 
             if(player.getInventory().getItemInMainHand().getType().equals(Material.END_PORTAL_FRAME)) {
-                Optional<VotablePlot> missingPlot = instance.getBuildBattleManager().getVoteablePlots().stream().filter(votablePlot -> {
-                    if(votablePlot.alreadyVotedAllCategories(player, instance.getBuildBattleManager().getCategories())) return false;
-                    return true;
-                }).findFirst();
+                Optional<VotablePlot> missingPlot = instance.getBuildBattleManager().getVoteablePlots().stream().filter(votablePlot -> !votablePlot.alreadyVotedAllCategories(player, instance.getBuildBattleManager().getCategories())).findFirst();
                 if(missingPlot.isPresent()) {
                     missingPlot.get().teleportPlayer(player);
                     player.sendMessage(Component.text("Du mangler at afgive én eller flere votes på dette plot").color(TextColor.color(Color.ORANGE.getRed(), Color.ORANGE.getGreen(), Color.ORANGE.getBlue())));
@@ -112,7 +106,7 @@ public class EventManager implements Listener {
             NamespacedKey key = new NamespacedKey(instance, "vote-category");
             if(player.getInventory().getItemInMainHand().getPersistentDataContainer().has(key)) {
                 event.setCancelled(true);
-                PlotPlayer plotPlayer = PlotPlayer.from(player);
+                PlotPlayer<Player> plotPlayer = PlotPlayer.from(player);
                 Plot currentPlot = plotPlayer.getCurrentPlot();
                 if (Objects.isNull(currentPlot) || !currentPlot.hasOwner()) return;
                 String categoryID = player.getInventory().getItemInMainHand().getPersistentDataContainer().get(key, PersistentDataType.STRING);

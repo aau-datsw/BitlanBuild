@@ -8,7 +8,6 @@ import dev.stjernholm.bitlanbuild.managers.BuildBattleManager;
 import dev.stjernholm.bitlanbuild.managers.EventManager;
 import dev.stjernholm.bitlanbuild.managers.PlotManager;
 import me.lucko.helper.plugin.ExtendedJavaPlugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 public final class BitlanBuild extends ExtendedJavaPlugin {
 
@@ -19,7 +18,7 @@ public final class BitlanBuild extends ExtendedJavaPlugin {
     @Override
     public void enable() {
         this.eventManager = new EventManager(this);
-        this.plotManager = new PlotManager(this);
+        this.plotManager = new PlotManager();
         this.buildBattleManager = new BuildBattleManager(this);
         registerCommands();
         getConfig().options().copyDefaults(true);
@@ -36,10 +35,6 @@ public final class BitlanBuild extends ExtendedJavaPlugin {
         eventManager = null;
         plotManager.disable();
         plotManager = null;
-    }
-
-    public EventManager getEventManager() {
-        return eventManager;
     }
 
     public PlotManager getPlotManager() {

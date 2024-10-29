@@ -1,16 +1,10 @@
 package dev.stjernholm.bitlanbuild.objects;
 
-import com.plotsquared.bukkit.player.BukkitOfflinePlayer;
-import com.plotsquared.core.PlotAPI;
-import com.plotsquared.core.player.OfflinePlotPlayer;
 import com.plotsquared.core.player.PlotPlayer;
 import com.plotsquared.core.plot.Plot;
 import dev.stjernholm.bitlanbuild.BitlanBuild;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -36,10 +30,8 @@ public class VotablePlot {
             FileConfiguration plotConfig = YamlConfiguration.loadConfiguration(plotFile);
             if(!plotConfig.contains("votes")) return;
             plotConfig.getConfigurationSection("votes").getKeys(false).forEach(categoryID -> {
-                if(categories.stream().filter(category -> category.getUuid().equals(categoryID)).count() > 0) {
-                    plotConfig.getConfigurationSection("votes." + categoryID).getKeys(false).forEach(playerID -> {
-                        votes.add(new Vote(UUID.fromString(categoryID), UUID.fromString(playerID), plotConfig.getInt("votes." + categoryID + "." + playerID)));
-                    });
+                if(categories.stream().anyMatch(category -> category.getUuid().equals(categoryID))) {
+                    plotConfig.getConfigurationSection("votes." + categoryID).getKeys(false).forEach(playerID -> votes.add(new Vote(UUID.fromString(categoryID), UUID.fromString(playerID), plotConfig.getInt("votes." + categoryID + "." + playerID))));
                 }
             });
         }
@@ -54,8 +46,8 @@ public class VotablePlot {
 
     public void teleportPlayer(Player player) {
         Optional<Plot> plot = instance.getPlotManager().getPlotAPI().getAllPlots().stream().filter(_plot -> owner.equals(_plot.getOwner())).findFirst();
-        PlotPlayer teleportPlayer = PlotPlayer.from(player);
-        if (plot.isPresent()) plot.get().teleportPlayer(teleportPlayer, couldTeleport -> {});
+        PlotPlayer<Player> teleportPlayer = PlotPlayer.from(player);
+        plot.ifPresent(value -> value.teleportPlayer(teleportPlayer, couldTeleport -> {}));
     }
 
     public UUID getOwner() {
@@ -64,8 +56,7 @@ public class VotablePlot {
 
     public int getRating(UUID categoryID, Player player) {
         Optional<Vote> vote = alreadyCastedVoteInCategory(categoryID, player);
-        if(vote.isPresent()) return vote.get().getRating();
-        return 0;
+        return vote.map(Vote::getRating).orElse(0);
     }
 
     public void castVote(UUID category, Player player, int rating) {
@@ -82,30 +73,30 @@ public class VotablePlot {
     }
 
     public double calculateTotalScore() {
-        Map<UUID, Integer> scores = new HashMap<>();
+        Map<UUID, Double> scores = new HashMap<>();
         Map<UUID, Integer> total = new HashMap<>();
         for (Vote vote : votes) {
-            scores.put(vote.getCategory(), scores.getOrDefault(vote.getCategory(), 0) + vote.getRating());
+            scores.put(vote.getCategory(), scores.getOrDefault(vote.getCategory(), 0.0) + vote.getRating());
             total.put(vote.getCategory(), total.getOrDefault(vote.getCategory(), 0) + 1);
         }
-        if(total.size() == 0) return 0;
+        if(total.isEmpty()) return 0;
 
         return scores.keySet().stream().mapToDouble(category -> scores.get(category) / total.get(category)).sum();
     }
 
     public double categoryScore(UUID category) {
-        Map<UUID, Integer> categoryScore = new HashMap<>();
+        Map<UUID, Double> categoryScore = new HashMap<>();
         int total = 0;
         for (Vote vote : votes) {
             if(vote.getCategory().equals(category)) {
-                categoryScore.put(vote.getPlayer(), categoryScore.getOrDefault(vote.getPlayer(), 0) + vote.getRating());
+                categoryScore.put(vote.getPlayer(), categoryScore.getOrDefault(vote.getPlayer(), 0.0) + vote.getRating());
                 total++;
             }
         }
 
         if(total == 0) return 0;
 
-        return categoryScore.values().stream().mapToInt(score -> score.intValue()).sum() / total;
+        return categoryScore.values().stream().mapToDouble(Double::intValue).sum() / total;
     }
 
     private Optional<Vote> alreadyCastedVoteInCategory(UUID category, Player player) {
@@ -125,9 +116,5 @@ public class VotablePlot {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public HashSet<Vote> getVotes() {
-        return votes;
     }
 }

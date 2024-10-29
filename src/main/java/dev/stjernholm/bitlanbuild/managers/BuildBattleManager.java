@@ -48,14 +48,14 @@ public class BuildBattleManager {
     private void loadCategories() {
         FileConfiguration config = instance.getConfig();
         config.getConfigurationSection("categories").getKeys(false).forEach(category -> {
-           Bukkit.getLogger().info("Loading category: " + category);
+           instance.getLogger().info("Loading category: " + category);
            if(!config.contains("categories." + category + ".uuid")) {
                config.set("categories." + category + ".uuid", UUID.randomUUID().toString());
            }
            if(config.contains("categories." + category + ".name") && config.contains("categories." + category + ".item")) {
-               Material material = Material.getMaterial(config.getString("categories." + category + ".item"));
-               String displayName = config.getString("categories." + category + ".name");
-               String uuid = config.getString("categories." + category + ".uuid");
+               Material material = Material.getMaterial(config.getString("categories." + category + ".item", "Category material not found"));
+               String displayName = config.getString("categories." + category + ".name", "Category item name not found");
+               String uuid = config.getString("categories." + category + ".uuid", "Category uuid not found");
                Category newCategory = new Category(displayName, material, uuid, instance);
                categories.add(newCategory);
            }
@@ -111,7 +111,7 @@ public class BuildBattleManager {
     public enum COMPETITION_STATUS {
         WAITING,
         STARTED,
-        ENDED;
+        ENDED
     }
 
     public COMPETITION_STATUS getStatus() {
