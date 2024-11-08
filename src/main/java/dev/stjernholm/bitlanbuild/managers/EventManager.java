@@ -56,8 +56,11 @@ public class EventManager implements Listener {
         // Get player as plot player type
         PlotPlayer<Player> plotPlayer = PlotPlayer.from(player);
 
+        //Count of plots player is member of:
+        long plotCount = instance.getPlotManager().getPlotAPI().getAllPlots().stream().filter(_plot -> _plot.getOwner().equals(player.getUniqueId()) || _plot.getTrusted().contains(player.getUniqueId())).count();
+
         // Create new plot if no plot is created yet and player is not op.
-        if(plotPlayer.getPlotCount() == 0 && !player.isOp() && instance.getBuildBattleManager().getStatus() != BuildBattleManager.COMPETITION_STATUS.ENDED) {
+        if(plotCount == 0 && !player.isOp() && instance.getBuildBattleManager().getStatus() != BuildBattleManager.COMPETITION_STATUS.ENDED) {
             player.sendMessage(Component.text("No current plot found, creating new plot").color(grey));
             // Get next available plot from center 0,0 plot id.
             Plot freePlot = plotPlayer.getApplicablePlotArea().getNextFreePlot(plotPlayer, PlotId.of(0,0));
@@ -95,7 +98,7 @@ public class EventManager implements Listener {
             if(player.getInventory().getItemInMainHand().getType().equals(Material.END_PORTAL_FRAME)) {
                 Optional<VotablePlot> missingPlot = instance.getBuildBattleManager().getVoteablePlots().stream().filter(votablePlot -> !votablePlot.alreadyVotedAllCategories(player, instance.getBuildBattleManager().getCategories())).findFirst();
                 if(missingPlot.isPresent()) {
-                    missingPlot.get().teleportPlayer(player);
+                    instance.getPlotManager().teleportPlayer(player, missingPlot.get().getOwner());
                     player.sendMessage(Component.text("Du mangler at afgive én eller flere votes på dette plot").color(TextColor.color(Color.ORANGE.getRed(), Color.ORANGE.getGreen(), Color.ORANGE.getBlue())));
                 } else {
                     player.sendMessage(Component.text("Der er ikke flere votable plots!").color(TextColor.color(Color.RED.getRed(), Color.RED.getGreen(), Color.RED.getBlue())));

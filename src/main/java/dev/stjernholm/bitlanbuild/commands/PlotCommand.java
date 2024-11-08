@@ -26,18 +26,7 @@ public class PlotCommand implements CommandExecutor {
         if(!(commandSender instanceof Player)) return false;
 
         Player player = (Player) commandSender;
-        PlotPlayer plotPlayer = PlotPlayer.from(player);
-
-        if(plotPlayer.getPlotCount() > 0) {
-            Plot plot = (Plot) plotPlayer.getPlots().iterator().next();
-            plot.teleportPlayer(plotPlayer, couldTeleport -> {});
-        } else {
-            if(player.isOp()) {
-                player.sendMessage(Component.text("Since you're an administrator no plot can be created for you.").color(red));
-            } else {
-                player.sendMessage(Component.text("You don't have a plot. Please try to rejoin the server! :)").color(red));
-            }
-        }
+        instance.getPlotManager().teleportPlayer(player);
 
         return false;
     }

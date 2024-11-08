@@ -44,12 +44,6 @@ public class VotablePlot {
         return true;
     }
 
-    public void teleportPlayer(Player player) {
-        Optional<Plot> plot = instance.getPlotManager().getPlotAPI().getAllPlots().stream().filter(_plot -> owner.equals(_plot.getOwner())).findFirst();
-        PlotPlayer<Player> teleportPlayer = PlotPlayer.from(player);
-        plot.ifPresent(value -> value.teleportPlayer(teleportPlayer, couldTeleport -> {}));
-    }
-
     public UUID getOwner() {
         return owner;
     }

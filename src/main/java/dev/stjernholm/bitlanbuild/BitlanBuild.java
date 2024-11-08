@@ -18,7 +18,7 @@ public final class BitlanBuild extends ExtendedJavaPlugin {
     @Override
     public void enable() {
         this.eventManager = new EventManager(this);
-        this.plotManager = new PlotManager();
+        this.plotManager = new PlotManager(this);
         this.buildBattleManager = new BuildBattleManager(this);
         registerCommands();
         getConfig().options().copyDefaults(true);
